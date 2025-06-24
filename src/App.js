@@ -2,21 +2,22 @@ import { useState } from "react";
 import PromptForm from "./components/PromptForm";
 import ActionButtons from "./components/ActionButtons";
 import LoadingSpinner from "./components/LoadingSpinner";
-import VideoUpload from "./components/VideoUpload"; // Import VideoUpload component
-import ProgressBar from "./components/ProgressBar"; // Import ProgressBar component
+import VideoUpload from "./components/VideoUpload";
+import ProgressBar from "./components/ProgressBar";
 
 function App() {
   const [videoUrl, setVideoUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [uploadedVideo, setUploadedVideo] = useState(null); // Store uploaded video file
-  const [uploadProgress, setUploadProgress] = useState(0); // Progress state for upload
-  const [uploading, setUploading] = useState(false); // To track if upload is in progress
-  const [uploadSuccess, setUploadSuccess] = useState(false); // To track upload success
-  const [uploadMessage, setUploadMessage] = useState(""); // Success message
+  const [uploadedVideo, setUploadedVideo] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   const generateVideo = async (prompt) => {
     console.log("Prompt submitted:", prompt);
     setIsGenerating(true);
+
     // Simulate API call delay
     setTimeout(() => {
       setVideoUrl("https://www.w3schools.com/html/mov_bbb.mp4"); // Mock video
@@ -33,7 +34,7 @@ function App() {
   };
 
   const handleVideoSelect = (file) => {
-    setUploadedVideo(file); // Store the selected video file
+    setUploadedVideo(file);
   };
 
   const handleUpload = (platform) => {
@@ -41,16 +42,15 @@ function App() {
       alert("Please upload a video first!");
       return;
     }
-    alert(`Uploading to ${platform}...`);
+    alert(`Uploading to ${platform}... (Simulated)`);
 
     setUploading(true);
     setUploadSuccess(false);
     setUploadMessage("");
     let progress = 0;
 
-    // Simulating upload progress
     const uploadInterval = setInterval(() => {
-      progress += 10; // Increment progress
+      progress += 10;
       setUploadProgress(progress);
 
       if (progress >= 100) {
@@ -59,20 +59,19 @@ function App() {
         setUploadMessage(`Video successfully uploaded to ${platform}!`);
         setUploading(false);
       }
-    }, 500); // Simulate every 500ms
+    }, 500);
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-500 mb-6">
-        AI Video Generator
-      </h1>
+      <h1 className="text-4xl font-bold text-blue-500 mb-6">AI Video Generator</h1>
+
       {!videoUrl && !isGenerating && !uploadedVideo && (
         <PromptForm onSubmit={generateVideo} />
       )}
+
       {isGenerating && <LoadingSpinner />}
 
-      {/* Video Upload Feature */}
       {!videoUrl && !isGenerating && !uploadedVideo && (
         <VideoUpload onVideoSelect={handleVideoSelect} />
       )}
@@ -80,11 +79,7 @@ function App() {
       {videoUrl && (
         <>
           <div className="mt-6 w-full flex justify-center">
-            <video
-              src={videoUrl}
-              controls
-              className="w-full max-w-screen-xl h-auto rounded shadow-lg"
-            />
+            <video src={videoUrl} controls className="w-full max-w-screen-xl h-auto rounded shadow-lg" />
           </div>
           <ActionButtons onRetry={handleRetry} videoUrl={videoUrl} />
         </>
@@ -99,15 +94,10 @@ function App() {
               className="w-full max-w-screen-xl h-auto rounded shadow-lg"
             />
           </div>
-          <ActionButtons
-            onRetry={handleRetry}
-            videoUrl={URL.createObjectURL(uploadedVideo)}
-            onUpload={handleUpload}
-          />
+          <ActionButtons onRetry={handleRetry} videoUrl={URL.createObjectURL(uploadedVideo)} onUpload={handleUpload} />
         </>
       )}
 
-      {/* Progress Bar and Confirmation */}
       {uploading && <ProgressBar progress={uploadProgress} />}
       {uploadMessage && <p className="mt-4 text-green-600 font-bold">{uploadMessage}</p>}
     </div>
