@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import PromptForm from "./components/PromptForm";
 import ActionButtons from "./components/ActionButtons";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -37,29 +38,62 @@ function App() {
     setUploadedVideo(file);
   };
 
-  const handleUpload = (platform) => {
+  const handleUpload = async (platform) => {
     if (!uploadedVideo) {
       alert("Please upload a video first!");
       return;
     }
-    alert(`Uploading to ${platform}... (Simulated)`);
 
-    setUploading(true);
-    setUploadSuccess(false);
-    setUploadMessage("");
-    let progress = 0;
+    if (platform === "YouTube") {
+      try {
+        setUploading(true);
+        setUploadProgress(0);
+        setUploadMessage("");
 
-    const uploadInterval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
+        const formData = new FormData();
+        formData.append("file", uploadedVideo);
+        formData.append("title", "AI Generated Video");
+        formData.append("description", "Uploaded via AI Video Uploader");
+        formData.append("privacyStatus", "private");
 
-      if (progress >= 100) {
-        clearInterval(uploadInterval);
-        setUploadSuccess(true);
-        setUploadMessage(`Video successfully uploaded to ${platform}!`);
+        const response = await axios.post("http://localhost:8080/youtube/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
+          },
+        });
+
         setUploading(false);
+        setUploadSuccess(true);
+        setUploadMessage(`Video successfully uploaded to YouTube! Watch here: ${response.data}`);
+
+      } catch (error) {
+        setUploading(false);
+        console.error("Upload error:", error);
+        setUploadMessage("Failed to upload video to YouTube.");
       }
-    }, 500);
+    } else {
+      // Simulated upload for other platforms
+      alert(`Uploading to ${platform}... (Simulated)`);
+
+      setUploading(true);
+      setUploadSuccess(false);
+      setUploadMessage("");
+      let progress = 0;
+
+      const uploadInterval = setInterval(() => {
+        progress += 10;
+        setUploadProgress(progress);
+
+        if (progress >= 100) {
+          clearInterval(uploadInterval);
+          setUploadSuccess(true);
+          setUploadMessage(`Video successfully uploaded to ${platform}!`);
+          setUploading(false);
+        }
+      }, 500);
+    }
   };
 
   return (

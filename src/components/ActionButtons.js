@@ -1,4 +1,8 @@
-export default function ActionButtons({ onRetry, videoUrl }) {
+import { useState } from 'react';
+
+export default function ActionButtons({ onRetry, videoUrl, title, description }) {
+    const [uploadStatus, setUploadStatus] = useState('');
+
     if (!videoUrl) return null;
 
     const handleDownload = () => {
@@ -10,8 +14,37 @@ export default function ActionButtons({ onRetry, videoUrl }) {
         document.body.removeChild(link);
     };
 
-    const handleUpload = (platform) => {
-        alert(`Uploading to ${platform} (feature coming soon!)`);
+    const handleUpload = async (platform) => {
+        if (platform !== 'YouTube') {
+            alert(`Uploading to ${platform} (feature coming soon!)`);
+            return;
+        }
+
+        try {
+            setUploadStatus('Uploading to YouTube...');
+
+            // Prepare the file for upload
+            const response = await fetch(videoUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'generated-video.mp4', { type: 'video/mp4' });
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('title', title || 'AI Generated Video');
+            formData.append('description', description || 'Uploaded via AI Video Uploader');
+            formData.append('privacyStatus', 'private');
+
+            const uploadResponse = await fetch('http://localhost:8080/youtube/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await uploadResponse.text();
+            setUploadStatus(result);
+        } catch (error) {
+            console.error('Upload error:', error);
+            setUploadStatus('Upload failed.');
+        }
     };
 
     return (
@@ -46,6 +79,8 @@ export default function ActionButtons({ onRetry, videoUrl }) {
             >
                 Upload to TikTok
             </button>
+
+            {uploadStatus && <p className="mt-4 text-center">{uploadStatus}</p>}
         </div>
     );
 }
